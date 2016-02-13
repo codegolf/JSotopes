@@ -7,7 +7,7 @@ by xem and innovati
 
 Code:
 
-- source: http://codegolf.github.io/JSotopes/index.html
+- annotated source: http://codegolf.github.io/JSotopes/index.html
 - golfed: http://codegolf.github.io/JSotopes/golf-hex.html
 - packed (1023b): http://codegolf.github.io/JSotopes/golf-hex.pack.html
 
