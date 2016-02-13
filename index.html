@@ -1,0 +1,324 @@
+<meta charset=utf-8>
+<canvas id=a width=900 height=900>
+<script>
+
+// Atomic number, Name, Decay type
+// Source: https://upload.wikimedia.org/wikipedia/commons/9/92/NuclideMap.PNG
+// Legent: K: black, P: pink, M: mauve, Y: yellow, B: blue, O: orange, G green, W: white, N: newline offset
+atoms = [
+//[0,"n","1N1P"],
+[1,"H","2K1P4M"], // -1N
+[2,"He","1N2K1M1P1M1P2M"],
+[3,"Li","-1N3O2K1Y1P1M1P1M"],
+[4,"Be","1N1O1Y1B1Y1K3P1M1P1M"],
+[5,"B","0N1O3Y2K4P1M1P1M1P"],
+[6,"C","1N1O3B2K5P1M1P1M1P"],
+[7,"N","1N2O2B2K8P2M"],
+[8,"O","1N1O3B3K6P4M"],
+[9,"F","1N3O2B1K8P1M1P1M1P"],
+[10,"Ne","1N1O3B3K10P1W1P"],
+[11,"Na","1N1B1O3B1K12P1W1M"],
+[12,"Mg","0N1O4B3K11P2M1P"],
+[13,"Al","1N1O5B1K10P2M3P"],
+[14,"Si","0N6B3K7P4M1P2M"],
+[15,"P","1N2O5B1K12P1M2P"],
+[16,"S","1N1O5B3K1P1K10P1W1P1M"],
+[17,"Cl","1N3O4B1K1P1K14P"],
+[18,"Ar","1N1O5B1K1B1K1P1K13P"],
+[19,"K","1N3O4B1K1P1K14P"],
+[20,"Ca","1N1O7B3K12P1M"],
+[21,"Sc","1N2O1W1O5B1K10P1M4P"],
+[22,"Ti","2N7B5K12P1M"],
+[23,"V","0N3O8B1K13P1M"],
+[24,"Cr","1N10B3K10P1M2P"],
+[25,"Mn","1N1B1O9B1K12P1W1P"],
+[26,"Fe","0N1O1W7B1K1B3K14P"],
+[27,"Co","3N1O9B1K16P"],
+[28,"Ni","-2N10B1K1B3K1P1K14P"],
+[29,"Cu","3N3O8B1K1B1K15P"],
+[30,"Zn","1N3O7B1K1B3K15P"],
+[31,"Ga","1N4O9B1K1P1K15P"],
+[32,"Ge","1N3O9B1K1B3K15P"],
+[33,"As","1N4O11B1K17P"],
+[34,"Se","3N10B1K1B3K3P1K7P1M4P"],
+[35,"Br","2N3O9B1K1P1K16P"],
+[36,"Kr","1N11B1K1B3K1P1K14P"],
+[37,"Rb","1N3O11B1K16P"],
+[38,"Sr","1N11B1K1B3K15P1W1P"],
+[39,"Y","2N13B1K14P1W4P"],
+[40,"Zr","1N12B3K1P1K13P2M1P"],
+[41,"Nb","2N12B1K20P"],
+[42,"Mo","1N9B1K1B5K16P1M"],
+[43,"Tc","1N13B17P1M3P"],
+[44,"Ru","1N9B1K1B5K1P1K16P"],
+[45,"Rh","1N14B1K18P1M"],
+[46,"Pd","1N11B1K1B3K1P1K1P1K14P"],
+[47,"Ag","1N14B1K1P1K21P"],
+[48,"Cd","1N15B3K20P"],
+[49,"In","1N1O15B1K22P"],
+[50,"Sn","1N13B1K1B7K1P1K1P1K13P"],
+[51,"Sb","3N18B1K1P1K16P"],
+[52,"Te","1N3Y14B1K1B3K12P1M3P"],
+[53,"I","2N1Y1O17B1K17P"],
+[54,"Xe","0N3Y14B1K1B5K15P"],
+[55,"Cs","2N2O19B1K16P1M1P"],
+[56,"Ba","1N20B5K12P1M2P"],
+[57,"La","2N1O21B1K16P"],
+[58,"Ce","1N21B1K17P"],
+[59,"Pr","1N1O19B1K18P"],
+[60,"Nd","2N18B2K1Y2K1P1K13P"],
+[61,"Pm","1N21B17P"],
+[62,"Sm","1N16B1K1B3Y2K1P1K1P1K11P"],
+[63,"Wu","1N2O19B1K1B1K14P"],
+[64,"Gd","3N2B1W11B1Y1B1Y1B1Y1B5K11P"],
+[65,"Tb","0N1O1B1O21B1K12P"],
+[66,"Dy","2N16B1Y1B1K1B1K1B3K1P1K9P"],
+[67,"Ho","1N2O23B1K10P"],
+[68,"Wr","2N9B2Y8B1K1B1K1B3K1P1K7P"],
+[69,"Tm","1N1O7B2Y14B1K10P"],
+[70,"Yb","2N5B3Y12B1K1B5K1P1K5P"],
+[71,"Lu","1N2O1B1Y1B3Y17B1K9P"],
+[72,"Hf","2N1W2B2Y16B1Y1B5K8P"],
+[73,"Ta","1N2O2Y22B1K9P"],
+[74,"W","2N4Y18B1Y1B3Y1P1Y6P"],
+[75,"RW","0N3O1Y1B1Y1B1Y18B1K7P1W1P"],
+[76,"Os","2N7Y3B2Y10B1Y1B1Y4K1P1K5P1W1P"],
+[77,"Ir","1N1W5Y1B1Y19B1K1P1K6P"],
+[78,"Pt","1N10Y14B1Y1B1K1B3K1P1K5P"],
+[79,"Au","2N3O4Y1W1Y6B1Y12B1K8P"],
+[80,"Hg","1N9Y11B1W4B1K1B5K1P1K6P"],
+[81,"Tl","4N1O5Y9B1W11B1K1P1K7P"],
+[82,"Pb","1N6Y1B1Y18B1Y1B3K7P"],
+[83,"Bi","5N1Y1O3Y1B2Y17B1K1P1Y7P"],
+[84,"Po","3N1B8Y1B1Y9B11Y2P"],
+[85,"At","2N1Y1W9Y10B8Y4P"],
+[86,"Rn","1N12Y1B1Y1B1Y1B1Y1B9Y1P1Y6P"],
+[87,"Fr","5N13Y1B9Y11P"],
+[88,"Ra","1N24Y1P1Y8P"],
+[89,"Ac","4N18Y1B1Y11P"],
+[90,"Th","1N1W22Y1P1Y6P"],
+[91,"Pa","3N16Y3B1Y9P"],
+[92,"U","4N3Y1B1W6Y1B1Y1B5Y1P1Y4P"],
+[93,"Np","7N3Y1B1Y7B1Y7P"],
+[94,"Pu","2N3Y5B1Y1B3Y1P1Y1P1Y3P"],
+[95,"Am","1N3B1Y2B1Y4B1Y1P1Y5Y"],
+[96,"Cm","1N1G2Y5B1Y1B7Y1P1G1P1W"],
+[97,"Bk","1N2Y1W2B1W7B2Y3P1W2P"],
+[98,"Cf","2N2G1B1Y1B1Y1B1Y1B1Y1B5Y1P1G1P1G"],
+[99,"Ws","2N1B1Y10B3Y2P1G1Y"],
+[100,"Fm","1N1G1Y1G4Y1B1Y1B1Y1B2Y1G1Y3G"],
+[101,"Md","2N1Y1B1Y1B1Y8B1Y2G2Y"],
+[102,"No","2N1G1W1G7Y1G1Y1G1P2G1Y"],
+[103,"Lr","2N1B1G8Y2G2Y2G"],
+[104,"Rf","1N4G1Y1G1Y1G1Y2G2Y2G1Y"],
+[105,"Db","1N8Y1G3Y2G1Y"],
+[106,"Sg","2N1G3Y1G1Y3G1W1G1W3Y1G"],
+[107,"Bh","1N8Y3W2Y1G1Y1G"],
+[108,"Hs","2N5Y1W2Y2G1W3Y"],
+[109,"Mt","1N4Y1W4Y1G2Y2W1Y"],
+[110,"Ds","1N5Y1G3Y1G1Y2G1W1G"],
+[111,"Rg","4N6Y1G3Y1G1Y"],
+[112,"Cn","4N1Y1G2Y1W1G1Y1G1Y"],
+[113,"Uut","0N4W2Y3G"],
+[114,"Fl","7N1G3Y"],
+[115,"Uup","0N3Y1G1Y"],
+[116,"Lv","2N4Y"],
+[117,"Uus","0N2Y"],
+[118,"UUo","2N1Y"]
+];
+
+/*
+maxY 1 - 24 - ASCII 44 - 67
+maxK 1 - 13 - ASCII 30 - 43
+maxB 1 - 23 - ASCII 68 - 91
+// 92 is "\"
+maxP 1 - 22 - ASCII 93 - 115
+maxO 1 - 4 - ASCII 116 - 119
+maxG 1 - 4  - ASCII 120 - 123
+maxM 1 - 4 -  ASCII 26 - 29
+maxN -3 - 7 - ASCII 15 - 25
+maxW 1 - 4 - ASCII 124 - 127
+*/
+
+//"HHeLiBeBCNOFNeNaMgAlSiPSClArKCaScTiVCrMnFeCoNiCuZnGaGeAsSeBrKrRbSrYZrNbMoTcRuRhPdAgCdInSnSbTeIXeCsBaLaCePrNdPmSmEuGdTbDyHoErTmYbLuHfTaWReOsIrPtAuHgTlPbBiPoAtRnFrRaAcThPaUNpPuAmCmBkCfEsFmMdNoLrRfDbSgBhHsMtDsRgCnUutFlUupLvUusUuo".split(/(?=[A-Z])/);
+
+
+encoded = "";
+
+maxY = 0;
+maxK = 0;
+maxB = 0;
+maxP = 0;
+maxO = 0;
+maxG = 0;
+maxM = 0;
+maxN = 0;
+maxW = 0;
+
+
+for(i in atoms){
+	atoms[i][2] = atoms[i][2].replace(/(-?\d+)(\w)/g,function(a,b,c){
+  	//console.log(a,b,c);
+    b = +b;
+    
+    // Use chars 44 to 67 for Y
+    if(c == "Y"){
+    	//console.log(i,"y",b);
+      if(b > maxY) maxY = b;
+      return String.fromCharCode(+b+44-1)
+    }
+    
+    // Use chars 30 to 43 for K
+    if(c == "K"){
+      if(b > maxK) maxK = b;
+    	return String.fromCharCode(+b+30-1)
+    }
+    
+    // Use chars 68 to 91 for B
+    if(c == "B"){
+      if(b > maxB) maxB = b;
+    	return String.fromCharCode(+b+68-1)
+    }
+    
+    // Use chars 93 to 115 for P
+    if(c == "P"){
+      if(b > maxP) maxP = b;
+    	return String.fromCharCode(+b+93-1)
+    }
+    
+    // Use chars 116 to 119 for O
+    if(c == "O"){
+      if(b > maxO) maxO = b;
+    	return String.fromCharCode(+b+116-1)
+    }
+    
+    // Use chars 120 to 123 for G
+    if(c == "G"){
+      if(b > maxG) maxG = b;
+    	return String.fromCharCode(+b+120-1)
+    }
+    
+    // Use chars 26 to 29 for M
+    if(c == "M"){
+      if(b > maxM) maxM = b;
+    	return String.fromCharCode(+b+26-1)
+    }
+    
+    // Use chars 15 to 25 for N, starting at -3
+    if(c == "N"){
+      if(b > maxN) maxN = b;
+    	return String.fromCharCode(+b+15+3)
+    }
+    
+    // Use chars 124 to 127 for W
+    if(c == "W"){
+      if(b > maxW) maxW = b;
+    	return String.fromCharCode(+b+124-1)
+    }
+  });
+  
+    
+  //document.body.innerHTML+="<p>"+atoms[i][1] + ": " +atoms[i][2];
+  encoded += atoms[i][2];
+}
+
+console.log(encoded, encoded.length);
+
+encoded=']]]v,]]t,D,_]t.`]]tFa]]uEdtF bvEd]]tF f|]DtFh|tG g]tHf_I c]uHh^tH ]f|]vG]jtHD]ivG]jtJ hu|tHf`J"hvKiM f^DtLh|]t|JD jtLlMD ]jvKDkvJD kwL]kvLD kwNmMD _c`vL]lND ]jvNlND k|]Pj|`O ]i]OpLD"lPm_LD"]lQnND ]]jQ]qR ptRrPD$]]iU]l.QD h_,tTm.QD"kuVl]W"h^tXlXmtVnU,]iXmSD.]]guVDjE|N,D,D,D"gtDtXhS,DDD ]euZfL-KDD ]ctJ-QfH.OD"]auD,D.Te|E-S,D"du-Ye/U,D.],bv,D,D,Uc|]2F-M,D,!]a|]|0D,V]b5Q,DD ]av/|,I,Od4N|GD"]bt0L|N]c1D,U,D c,t.D-T],cD3D,L6^,|4M3`7D,D,D,D4],b8D4gC],d=D,g|A],b;F,e.D|1D,D0],`.D,J,c.H,D.],],_F,E,G,],0x-H,D2]x]|-|E|J-_|^yD,D,D,D,D0]x]xD,M.^x,x,x/D,D,D-x,z,D,D,K,y-x|x2x,x]y,Dx3y-y{,x,x,y-y,3x.y,x.x,z|x|.x3~-x,x0|-y|./|/x-},0x.x,y|x1x.x,,x-|x,x,-zx..x,/-,'
+
+c = a.getContext("2d");
+offset = 0;
+x = 0;
+y = 0;
+size = 0;
+color = 0;
+s = "";
+last_x = 0;
+
+
+for(i in encoded){
+//for(i=0;i<2000;i++){
+		s = encoded.charCodeAt(i);
+    
+		// Use chars 44 to 67 for Yellow
+    if(s>=44 && s <= 67){
+    	color = "yellow";
+      size = s - 44;
+      //console.log(size+1, "Y");
+    }
+    
+    // Use chars 31 to 44 for blacK
+    if(s>=30 && s <= 43){
+    	color = "black";
+      size = s - 30;
+      //console.log(encoded[i], s, size+1, "K");
+    }
+    
+    // Use chars 68 to 91 for Blue
+    if(s>=68 && s <= 91){
+    	color = "blue";
+      size = s - 68;
+      //console.log(size+1, "B");
+    }
+    
+    // Use chars 93 to 115 for Pink
+    if(s>=93 && s <= 115){
+    	color = "pink";
+      size = s - 93;
+      //console.log(size+1, "P");
+    }
+    
+    // Use chars 116 to 119 for Orange
+    if(s>=116 && s <= 119){
+    	color = "orange";
+      size = s - 116;
+      //console.log(size+1, "O");
+    }
+    
+    // Use chars 120 to 123 for Green
+    if(s>=120 && s <= 124){
+    	color = "green";
+      size = s - 120;
+      //console.log(size+1, "G");
+    }
+    
+    // Use chars 26 to 29 for Mauve
+    if(s>=26 && s <= 29){
+    	color = "purple";
+      size = s - 26;
+      //console.log(size+1, "M");
+    }
+    
+    // Use chars 15 to 25 for Newline offset, stating at -3
+    if(s>=15 && s <= 25){
+    	y++;
+      size = s - 15 - 3;
+      x = last_x + size;
+      last_x = x;
+      //console.log(size+1-2, "N");
+      continue;
+    }
+    
+    // Use chars 124 to 127 for White (unknown/gaps)
+    if(s>=124 && s <= 127){
+    	color = "white";
+      size = s - 124;
+      //console.log(size+1, "W");
+    }
+    
+    c.fillStyle = color;
+		c.fillRect(x*5, y*5, (size+1)*5, 5);
+    x+= size+1;
+}
+
+/*console.log("maxY",maxY);
+console.log("maxK",maxK);
+console.log("maxB",maxB);
+console.log("maxP",maxP);
+console.log("maxO",maxO);
+console.log("maxG",maxG);
+console.log("maxM",maxM);
+console.log("maxN",maxN);
+console.log("maxW",maxW);*/
+
+</script>
