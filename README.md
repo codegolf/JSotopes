@@ -1,13 +1,15 @@
 JSotopes
 --
 
-A 1kb isotope table made for js1k 2016
+A 1kb isotope table made for js1k 2016 (WIP)
 
 by xem and innovati
 
+Code:
+
 - source: http://codegolf.github.io/JSotopes/index.html
 - golfed (hex colors): http://codegolf.github.io/JSotopes/golf-hex.html
-- golfed (hex colors): http://codegolf.github.io/JSotopes/golf-hsl.html
+- golfed (hsl colors): http://codegolf.github.io/JSotopes/golf-hsl.html
 
 
 Bonus:
