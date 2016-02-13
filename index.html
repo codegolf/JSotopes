@@ -1,13 +1,59 @@
 <meta charset=utf-8>
-<canvas id=a width=900 height=900>
+<body id=b>
+<center>
+<canvas id=a width=750 height=550>
 <script>
+c=a.getContext("2d");
+a.style.maxWidth="99%";
 
-// Atomic number, Name, Decay type
-// Source: https://upload.wikimedia.org/wikipedia/commons/9/92/NuclideMap.PNG
-// Legent: K: black, P: pink, M: mauve, Y: yellow, B: blue, O: orange, G green, W: white, N: newline offset
+
+/*** entry ***/
+
+// ================= //
+//     JS1k'16       //
+//     JSotopes      //
+//                   //
+//        by         //
+//  Maxime Euzière   //
+//   Tommy Hodgins   //
+// ================= //
+
+// --------------
+//  Introduction
+// --------------
+
+// This demo draws a table of isotopes (a.k.a table of nuclides) on a 750x550 px canvas.
+// Atomic number (Z) is drawn from bottom to top.
+// Number of nutrons (N) is drawn from left to right.
+// Each square represents a known isotope.
+// Each color represents the type of decay of that isotope.
+// The data comes from this chart: 
+
+// Z
+// ^ 
+// | **********
+// |  *******
+// | ******
+// |  *
+// |------------> N
+
+// ----------
+//  The data
+// ----------
+
+// We wrote the dataset below by hand according to the following chart: https://en.wikipedia.org/wiki/File:NuclideMap.PNG
+// This dataset represents each element and its isotopes.
+// Each line has the form [Atomic number, Name, Isotopes decay]
+// Isotopes decay is made of pairs (number, letter).
+// The number represents how many isotopes have the same type of decay.
+// The letter represents the type of decay.
+// For simplicity, the letters represent the colors of the chart.
+// (K: black, P: pink, M: mauve, Y: yellow, B: blue, O: orange, G: green, W: white, N: new line, offset from the previous line).
+// Example: "1N2O5B1K12P1M2P" means "1 newline offset + 2 orange + 5 blue + 1 black + 12 pink + 1 mauve + 2 pink".
+
 atoms = [
-//[0,"n","1N1P"],
-[1,"H","2K1P4M"], // -1N
+[0,"n","1P"],
+[1,"H","-1N2K1P4M"],
 [2,"He","1N2K1M1P1M1P2M"],
 [3,"Li","-1N3O2K1Y1P1M1P1M"],
 [4,"Be","1N1O1Y1B1Y1K3P1M1P1M"],
@@ -127,106 +173,95 @@ atoms = [
 [118,"UUo","2N1Y"]
 ];
 
-/*
-maxY 1 - 24 - ASCII 44 - 67
-maxK 1 - 13 - ASCII 30 - 43
-maxB 1 - 23 - ASCII 68 - 91
-// 92 is "\"
-maxP 1 - 22 - ASCII 93 - 115
-maxO 1 - 4 - ASCII 116 - 119
-maxG 1 - 4  - ASCII 120 - 123
-maxM 1 - 4 -  ASCII 26 - 29
-maxN -3 - 7 - ASCII 15 - 25
-maxW 1 - 4 - ASCII 124 - 127
-*/
+// ----------
+//  Encoding
+// ----------
 
-//"HHeLiBeBCNOFNeNaMgAlSiPSClArKCaScTiVCrMnFeCoNiCuZnGaGeAsSeBrKrRbSrYZrNbMoTcRuRhPdAgCdInSnSbTeIXeCsBaLaCePrNdPmSmEuGdTbDyHoErTmYbLuHfTaWReOsIrPtAuHgTlPbBiPoAtRnFrRaAcThPaUNpPuAmCmBkCfEsFmMdNoLrRfDbSgBhHsMtDsRgCnUutFlUupLvUusUuo".split(/(?=[A-Z])/);
+// In order to encode the isotopes data in the smallest amount of bytes, we'll use one ASCII char for each number of repetition of each type.
+// The first ASCII control characters (0 to 15) will be left free for RegPack's tokens.
 
+// - Yellow isotopes are repeated 1 to 24 times. They will be encoded on ASCII chars 44 to 67.
+// - Black, 1 to 13 times. Chars 30 to 43.
+// - Blue, 1 to 23 times. Chars 68 to 91.
+// - Pink, 1 to 22 times. Chars 93 to 115.
+// - Orange, 1 to 4 times. Chars 116 to 119.
+// - Green, 1 to 4 times. Chars 120 to 123.
+// - Mauve, 1 to 4 times. Chars 26 to 29.
+// - White, 1 to 4 times. Chars 124 to 127.
+// - Newlines offsets, -3 to 7 times. Chars 15 to 25.
+
+// NB: ASCII char 92 (antislash) is avoided to prevent an escape (\\) when the data is put in a string, and a double escape (\\\\) when it passes in RegPack.
+// NB2: ASCII char 39 (single quote) is also avoided to prevent similar escapes. (\\\'). This character is placed in the black range, but it's never used as there are never 10 black isotopes next to each other.
+
+// Here's the encoder:
 
 encoded = "";
 
-maxY = 0;
-maxK = 0;
-maxB = 0;
-maxP = 0;
-maxO = 0;
-maxG = 0;
-maxM = 0;
-maxN = 0;
-maxW = 0;
-
-
 for(i in atoms){
 	atoms[i][2] = atoms[i][2].replace(/(-?\d+)(\w)/g,function(a,b,c){
-  	//console.log(a,b,c);
+  	
     b = +b;
     
     // Use chars 44 to 67 for Y
     if(c == "Y"){
-    	//console.log(i,"y",b);
-      if(b > maxY) maxY = b;
       return String.fromCharCode(+b+44-1)
     }
     
     // Use chars 30 to 43 for K
     if(c == "K"){
-      if(b > maxK) maxK = b;
     	return String.fromCharCode(+b+30-1)
     }
     
     // Use chars 68 to 91 for B
     if(c == "B"){
-      if(b > maxB) maxB = b;
     	return String.fromCharCode(+b+68-1)
     }
     
     // Use chars 93 to 115 for P
     if(c == "P"){
-      if(b > maxP) maxP = b;
     	return String.fromCharCode(+b+93-1)
     }
     
     // Use chars 116 to 119 for O
     if(c == "O"){
-      if(b > maxO) maxO = b;
     	return String.fromCharCode(+b+116-1)
     }
     
     // Use chars 120 to 123 for G
     if(c == "G"){
-      if(b > maxG) maxG = b;
     	return String.fromCharCode(+b+120-1)
     }
     
     // Use chars 26 to 29 for M
     if(c == "M"){
-      if(b > maxM) maxM = b;
     	return String.fromCharCode(+b+26-1)
     }
     
     // Use chars 15 to 25 for N, starting at -3
     if(c == "N"){
-      if(b > maxN) maxN = b;
     	return String.fromCharCode(+b+15+3)
     }
     
     // Use chars 124 to 127 for W
     if(c == "W"){
-      if(b > maxW) maxW = b;
     	return String.fromCharCode(+b+124-1)
     }
   });
-  
-    
-  //document.body.innerHTML+="<p>"+atoms[i][1] + ": " +atoms[i][2];
   encoded += atoms[i][2];
 }
 
-console.log(encoded, encoded.length);
 
-encoded=']]]v,]]t,D,_]t.`]]tFa]]uEdtF bvEd]]tF f|]DtFh|tG g]tHf_I c]uHh^tH ]f|]vG]jtHD]ivG]jtJ hu|tHf`J"hvKiM f^DtLh|]t|JD jtLlMD ]jvKDkvJD kwL]kvLD kwNmMD _c`vL]lND ]jvNlND k|]Pj|`O ]i]OpLD"lPm_LD"]lQnND ]]jQ]qR ptRrPD$]]iU]l.QD h_,tTm.QD"kuVl]W"h^tXlXmtVnU,]iXmSD.]]guVDjE|N,D,D,D"gtDtXhS,DDD ]euZfL-KDD ]ctJ-QfH.OD"]auD,D.Te|E-S,D"du-Ye/U,D.],bv,D,D,Uc|]2F-M,D,!]a|]|0D,V]b5Q,DD ]av/|,I,Od4N|GD"]bt0L|N]c1D,U,D c,t.D-T],cD3D,L6^,|4M3`7D,D,D,D4],b8D4gC],d=D,g|A],b;F,e.D|1D,D0],`.D,J,c.H,D.],],_F,E,G,],0x-H,D2]x]|-|E|J-_|^yD,D,D,D,D0]x]xD,M.^x,x,x/D,D,D-x,z,D,D,K,y-x|x2x,x]y,Dx3y-y{,x,x,y-y,3x.y,x.x,z|x|.x3~-x,x0|-y|./|/x-},0x.x,y|x1x.x,,x-|x,x,-zx..x,/-,'
+// Here's the encoded data (907b):
 
-c = a.getContext("2d");
+encoded=']]]]v,]]t,D,_]t.`]]tFa]]uEdtF bvEd]]tF f|]DtFh|tG g]tHf_I c]uHh^tH ]f|]vG]jtHD]ivG]jtJ hu|tHf`J"hvKiM f^DtLh|]t|JD jtLlMD ]jvKDkvJD kwL]kvLD kwNmMD _c`vL]lND ]jvNlND k|]Pj|`O ]i]OpLD"lPm_LD"]lQnND ]]jQ]qR ptRrPD$]]iU]l.QD h_,tTm.QD"kuVl]W"h^tXlXmtVnU,]iXmSD.]]guVDjE|N,D,D,D"gtDtXhS,DDD ]euZfL-KDD ]ctJ-QfH.OD"]auD,D.Te|E-S,D"du-Ye/U,D.],bv,D,D,Uc|]2F-M,D,!]a|]|0D,V]b5Q,DD ]av/|,I,Od4N|GD"]bt0L|N]c1D,U,D c,t.D-T],cD3D,L6^,|4M3`7D,D,D,D4],b8D4gC],d=D,g|A],b;F,e.D|1D,D0],`.D,J,c.H,D.],],_F,E,G,],0x-H,D2]x]|-|E|J-_|^yD,D,D,D,D0]x]xD,M.^x,x,x/D,D,D-x,z,D,D,K,y-x|x2x,x]y,Dx3y-y{,x,x,y-y,3x.y,x.x,z|x|.x3~-x,x0|-y|./|/x-},0x.x,y|x1x.x,,x-|x,x,-zx..x,/-,'
+
+
+// ----------------------
+//  Decoding and drawing
+// ----------------------
+
+// Here's the program that decodes and draws the chart on the canvas:
+
 offset = 0;
 x = 0;
 y = 0;
@@ -237,88 +272,74 @@ last_x = 0;
 
 
 for(i in encoded){
-//for(i=0;i<2000;i++){
-		s = encoded.charCodeAt(i);
-    
-		// Use chars 44 to 67 for Yellow
-    if(s>=44 && s <= 67){
-    	color = "yellow";
-      size = s - 44;
-      //console.log(size+1, "Y");
-    }
-    
-    // Use chars 31 to 44 for blacK
-    if(s>=30 && s <= 43){
-    	color = "black";
-      size = s - 30;
-      //console.log(encoded[i], s, size+1, "K");
-    }
-    
-    // Use chars 68 to 91 for Blue
-    if(s>=68 && s <= 91){
-    	color = "blue";
-      size = s - 68;
-      //console.log(size+1, "B");
-    }
-    
-    // Use chars 93 to 115 for Pink
-    if(s>=93 && s <= 115){
-    	color = "pink";
-      size = s - 93;
-      //console.log(size+1, "P");
-    }
-    
-    // Use chars 116 to 119 for Orange
-    if(s>=116 && s <= 119){
-    	color = "orange";
-      size = s - 116;
-      //console.log(size+1, "O");
-    }
-    
-    // Use chars 120 to 123 for Green
-    if(s>=120 && s <= 124){
-    	color = "green";
-      size = s - 120;
-      //console.log(size+1, "G");
-    }
-    
-    // Use chars 26 to 29 for Mauve
-    if(s>=26 && s <= 29){
-    	color = "purple";
-      size = s - 26;
-      //console.log(size+1, "M");
-    }
-    
-    // Use chars 15 to 25 for Newline offset, stating at -3
-    if(s>=15 && s <= 25){
-    	y++;
-      size = s - 15 - 3;
-      x = last_x + size;
-      last_x = x;
-      //console.log(size+1-2, "N");
-      continue;
-    }
-    
-    // Use chars 124 to 127 for White (unknown/gaps)
-    if(s>=124 && s <= 127){
-    	color = "white";
-      size = s - 124;
-      //console.log(size+1, "W");
-    }
-    
-    c.fillStyle = color;
-		c.fillRect(x*5, y*5, (size+1)*5, 5);
-    x+= size+1;
+  s = encoded.charCodeAt(i);
+  
+  if(s>=44 && s <= 67){
+    color = "yellow";
+    size = s - 44;
+  }
+  
+  if(s>=30 && s <= 43){
+    color = "black";
+    size = s - 30;
+  }
+  
+  if(s>=68 && s <= 91){
+    color = "blue";
+    size = s - 68;
+  }
+  
+  if(s>=93 && s <= 115){
+    color = "pink";
+    size = s - 93;
+  }
+  
+  if(s>=116 && s <= 119){
+    color = "orange";
+    size = s - 116;
+  }
+  
+  if(s>=120 && s <= 124){
+    color = "green";
+    size = s - 120;
+  }
+  
+  if(s>=26 && s <= 29){
+    color = "purple";
+    size = s - 26;
+  }
+  
+  if(s>=15 && s <= 25){
+    y++;
+    size = s - 15 - 3;
+    x = last_x + size;
+    last_x = x;
+    continue;
+  }
+  
+  if(s>=124 && s <= 127){
+    color = "white";
+    size = s - 124;
+  }
+  
+  c.fillStyle = color;
+  c.fillRect(4*x, 4*y, 4*(size+1), 4);
+  x += size+1;
 }
 
-/*console.log("maxY",maxY);
-console.log("maxK",maxK);
-console.log("maxB",maxB);
-console.log("maxP",maxP);
-console.log("maxO",maxO);
-console.log("maxG",maxG);
-console.log("maxM",maxM);
-console.log("maxN",maxN);
-console.log("maxW",maxW);*/
+// ---------
+//  Golfing
+// ---------
 
+// The previous program can be simplified to a 1092b snippet:
+// NB: to make it fit, we had to sacrifice the original colors. The colors are now generated from the values of the ASCII charcodes beginning each isotope decay type.
+
+// y=x=l=9;for(i in e='](...snip...)-,')if(s=e.charCodeAt(i),26>s)y++,l=x=l+s-18;else{m=25;for(j in f=[0,4,14,24,25,23,4,4,4])m+=f[j],s>m&&(z=s-m,c.fillStyle="#"+(7*m-32));c.fillRect(4*x,550-4*y,4*z,4);x+=z}
+
+// ---------
+//  Packing
+// ---------
+
+// Packing is made using RegPack, with default parameters, but without variable renaming.
+// The result fits in 1023b
 </script>
