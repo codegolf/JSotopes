@@ -8,8 +8,9 @@ by xem and innovati
 Code:
 
 - source: http://codegolf.github.io/JSotopes/index.html
-- golfed (hex colors): http://codegolf.github.io/JSotopes/golf-hex.html
 - golfed (hsl colors): http://codegolf.github.io/JSotopes/golf-hsl.html
+- golfed (hex colors): http://codegolf.github.io/JSotopes/golf-hex.html
+- packed (hex colors, 1021b): http://codegolf.github.io/JSotopes/golf-hex.pack.html
 
 
 Bonus:
